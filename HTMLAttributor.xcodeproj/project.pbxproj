@@ -318,7 +318,7 @@
 				INFOPLIST_FILE = HTMLAttributor/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.michaelnisi.HTMLAttributor;
+				PRODUCT_BUNDLE_IDENTIFIER = ink.codes.HTMLAttributor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -336,7 +336,7 @@
 				INFOPLIST_FILE = HTMLAttributor/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.michaelnisi.HTMLAttributor;
+				PRODUCT_BUNDLE_IDENTIFIER = ink.codes.HTMLAttributor;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -381,6 +381,7 @@
 				4E728F601D5A269E00576340 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		4E728F611D5A269E00576340 /* Build configuration list for PBXNativeTarget "HTMLAttributorTests" */ = {
 			isa = XCConfigurationList;
@@ -389,6 +390,7 @@
 				4E728F631D5A269E00576340 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

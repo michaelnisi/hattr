@@ -1,6 +1,6 @@
 //
 //  HTMLAttributorTests.swift
-//  HTMLAttributorTests
+//  HTMLAttributor
 //
 //  Created by Michael on 8/9/16.
 //  Copyright © 2016 Michael Nisi. All rights reserved.
@@ -11,31 +11,147 @@ import XCTest
 
 class HTMLAttributorTests: XCTestCase {
 
-  var parser: HTMLAttributor!
+  var hattr: HTMLAttributor!
 
   override func setUp() {
     super.setUp()
-    let attr = [NSForegroundColorAttributeName: UIColor.lightTextColor()]
-    parser = HTMLAttributor(attributes: attr)
-    // Put setup code here. This method is called before the invocation of each test method in the class.
+    hattr = HTMLAttributor()
   }
 
   override func tearDown() {
-    parser = nil
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
+    hattr = nil
     super.tearDown()
   }
 
-  func testExample() {
-    // This is an example of a functional test case.
-    // Use XCTAssert and related functions to verify your tests produce the correct results.
-  }
+  func testString() {
+    func f(str: String) -> String {
+      let tree = try! self.hattr.parse(str)
+      return try! self.hattr.string(tree)
+    }
+    
+    // Not a fan of these trailing new lines.
+    
+    let wanted = [
+      "",
+      "Aliens?",
+      "Aliens?\n\n",
+      "Aliens?\n\nWhy yes.",
+      "Aliens?\n\nWhy yes.\nOh noes …",
+      "a\nb\nc\n",
+      "This is a simple (demo.html) sample.\n\n",
+      "First\n\nSecond\n\n",
+      "Root copy followed by\n\nA Headline\n\n"
+    ]
 
-  func testPerformanceExample() {
-    // This is an example of a performance test case.
-    self.measureBlock {
-      // Put the code you want to measure the time of here.
+    let html = [
+      "",
+      "Aliens?",
+      "<h1>Aliens?</h1>",
+      "<h1>Aliens?</h1>Why yes.",
+      // Note the self-closing '<br/>', NSXMLParser would, not unreasonably, 
+      // choke on an open '<br>'.
+      "<h1>Aliens?</h1>Why yes.<br/>Oh noes …",
+      "<ul><li>a</li><li>b</li><li>c</li></ul>",
+      "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>",
+      "<h1>First</h1><h1>Second</h1>",
+      "Root copy followed by<h1>A Headline</h1>"
+    ]
+    
+    XCTAssertEqual(wanted.count, html.count)
+    
+    for (i, b) in wanted.enumerate() {
+      let a = f(html[i])
+      XCTAssertEqual(a, b)
     }
   }
-
+  
+  func testAttributedString() {
+    func f(str: String) -> NSAttributedString {
+      let tree = try! self.hattr.parse(str)
+      return try! self.hattr.attributedString(tree)
+    }
+    let wanted = [
+      "",
+      "Aliens?",
+      "Aliens?\n\n",
+      "Aliens?\n\nWhy yes.",
+      "Aliens?\n\nWhy yes.\nOh noes …",
+      "a\nb\nc\n",
+      "This is a simple sample.\n\n",
+      "This\n\nSucks\n\n"
+    ]
+    
+    let found = [
+      f(""),
+      f("Aliens?"),
+      f("<h1>Aliens?</h1>"),
+      f("<h1>Aliens?</h1>Why yes."),
+      f("<h1>Aliens?</h1>Why yes.<br/>Oh noes …"),
+      f("<ul><li>a</li><li>b</li><li>c</li></ul>"),
+      f("<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"),
+      f("<h1>This</h1><h1>Sucks</h1>")
+    ]
+    
+    XCTAssertEqual(wanted.count, found.count)
+    
+    // TODO: Test attributes
+    
+    for (i, b) in wanted.enumerate() {
+      let a = found[i].string
+      XCTAssertEqual(a, b)
+    }
+  }
+  
+  func testAllNodesCount() {
+    func f(str: String) -> Int {
+      let tree = try! self.hattr.parse(str)
+      return allNodes(tree).count
+    }
+    let tests = [
+      (f(""), 1),
+      (f("Aliens?"), 2),
+      (f("<h1>Aliens?</h1>"), 3),
+      (f("<h1>Aliens?</h1>Why yes."), 4),
+      (f("<h1>Aliens?</h1>Why yes.<br/>Oh noes …"), 6),
+      (f("<ul><li>a</li><li>b</li><li>c</li></ul>"), 8)
+    ]
+    for t in tests {
+      XCTAssertEqual(t.0, t.1)
+    }
+  }
+  
+  func testTrimLeft() {
+    XCTAssertEqual(trimLeft(""), "")
+    XCTAssertEqual(trimLeft(" hello"), "hello")
+    XCTAssertEqual(trimLeft("   hello"), "hello")
+  }
+  
+  // Countering my subsiding motivation to continue writing this software, I
+  // compared performance: right now our version is 10X faster.
+  
+  func testAttributedStringPerformance() {
+    self.measureBlock {
+      let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
+      let tree = try! self.hattr.parse(html)
+      try! self.hattr.attributedString(tree)
+    }
+  }
+  
+  // Measuring Apple's code here for comparison.
+  
+  func testDataUsingEncodingPerformance() {
+    self.measureBlock {
+      let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
+      let data = html.dataUsingEncoding(NSUTF8StringEncoding)!
+      let opts: [String: AnyObject] = [
+        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
+        NSCharacterEncodingDocumentAttribute: NSUTF8StringEncoding,
+      ]
+      let _ = try! NSMutableAttributedString(
+        data: data,
+        options: opts,
+        documentAttributes: nil
+      )
+    }
+  }
 }
