@@ -10,7 +10,6 @@
 *.moved-aside
 *.pbxuser
 *.perspectivev3
-*.playground
 *.xccheckout
 *.xcuserstate
 DerivedData
