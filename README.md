@@ -2,6 +2,8 @@
 
 This framework provides a simple HTML parser to efficiently transform HTML snippets into attributed strings.
 
+[![Build Status](https://secure.travis-ci.org/michaelnisi/hattr.svg)](http://travis-ci.org/michaelnisi/hattr)
+
 ## Goals
 
 - No dependencies
