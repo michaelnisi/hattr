@@ -38,6 +38,11 @@
                BlueprintName = "HTMLAttributorTests"
                ReferencedContainer = "container:HTMLAttributor.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "HTMLAttributorTests/testDataUsingEncodingPerformance()">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
       <MacroExpansion>

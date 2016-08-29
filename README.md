@@ -2,6 +2,12 @@
 
 This framework provides a simple HTML parser to efficiently transform HTML snippets into attributed strings.
 
+## Goals
+
+- No dependencies
+- Offloadable from main thread
+- Keeping it simple
+
 ## Example
 
 ```swift

@@ -137,7 +137,8 @@ class HTMLAttributorTests: XCTestCase {
     }
   }
   
-  // Measuring Apple's code here for comparison.
+  // Measuring Apple's code here for comparison, which takes ages to start its
+  // initial run because it has to load a plethora of dependencies first.
   
   func testDataUsingEncodingPerformance() {
     self.measureBlock {
