@@ -1,16 +1,27 @@
-project=HTMLAttributor.xcodeproj
-scheme=HTMLAttributor
-sdk=iphonesimulator
+P=HTMLAttributor.xcodeproj
 
-all: clean build
+XCODEBUILD=xcodebuild
+
+IOS_DEST=-destination 'platform=iOS Simulator,name=iPhone 7'
+
+all: iOS
 
 clean:
-	-rm -rf build
+	$(XCODEBUILD) clean
 
-build:
-	xcodebuild build -configuration Debug
+test_%:
+	$(XCODEBUILD) test -project $(P) -configuration Debug -scheme $(SCHEME) $(DEST)
 
-test:
-	xcodebuild test -configuration Debug -scheme $(scheme) -destination 'platform=iOS Simulator,name=iPhone 6s'
+build_%:
+	$(XCODEBUILD) build -project $(P) -configuration Release -scheme $(SCHEME)
 
-.PHONY: all clean test
+%iOS: SCHEME := HTMLAttributor
+
+test_iOS: DEST := $(IOS_DEST)
+
+iOS: build_iOS
+check_iOS: test_iOS
+
+test: test_iOS
+
+.PHONY: all, clean, test, %OS

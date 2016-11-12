@@ -24,7 +24,7 @@ class HTMLAttributorTests: XCTestCase {
   }
 
   func testString() {
-    func f(str: String) -> String {
+    func f(_ str: String) -> String {
       let tree = try! self.hattr.parse(str)
       return try! self.hattr.string(tree)
     }
@@ -59,14 +59,14 @@ class HTMLAttributorTests: XCTestCase {
     
     XCTAssertEqual(wanted.count, html.count)
     
-    for (i, b) in wanted.enumerate() {
+    for (i, b) in wanted.enumerated() {
       let a = f(html[i])
       XCTAssertEqual(a, b)
     }
   }
   
   func testAttributedString() {
-    func f(str: String) -> NSAttributedString {
+    func f(_ str: String) -> NSAttributedString {
       let tree = try! self.hattr.parse(str)
       return try! self.hattr.attributedString(tree)
     }
@@ -96,14 +96,14 @@ class HTMLAttributorTests: XCTestCase {
     
     // TODO: Test attributes
     
-    for (i, b) in wanted.enumerate() {
+    for (i, b) in wanted.enumerated() {
       let a = found[i].string
       XCTAssertEqual(a, b)
     }
   }
   
   func testAllNodesCount() {
-    func f(str: String) -> Int {
+    func f(_ str: String) -> Int {
       let tree = try! self.hattr.parse(str)
       return allNodes(tree).count
     }
@@ -130,10 +130,10 @@ class HTMLAttributorTests: XCTestCase {
   // compared performance: right now our version is 10X faster.
   
   func testAttributedStringPerformance() {
-    self.measureBlock {
+    self.measure {
       let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
       let tree = try! self.hattr.parse(html)
-      try! self.hattr.attributedString(tree)
+      let _ = try! self.hattr.attributedString(tree)
     }
   }
   
@@ -141,12 +141,12 @@ class HTMLAttributorTests: XCTestCase {
   // initial run because it has to load a plethora of dependencies first.
   
   func testDataUsingEncodingPerformance() {
-    self.measureBlock {
+    self.measure {
       let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
-      let data = html.dataUsingEncoding(NSUTF8StringEncoding)!
+      let data = html.data(using: String.Encoding.utf8)!
       let opts: [String: AnyObject] = [
-        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
-        NSCharacterEncodingDocumentAttribute: NSUTF8StringEncoding,
+        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType as AnyObject,
+        NSCharacterEncodingDocumentAttribute: String.Encoding.utf8 as AnyObject,
       ]
       let _ = try! NSMutableAttributedString(
         data: data,

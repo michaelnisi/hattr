@@ -1,8 +1,8 @@
 //: Playground - noun: a place where people can play
 
 import UIKit
+import PlaygroundSupport
 import HTMLAttributor
-import XCPlayground
 
 let textView = UITextView(frame: CGRect(x: 0, y: 0, width: 640, height: 1136))
 let oak = HTMLAttributor()
@@ -11,7 +11,4 @@ let tree = try! oak.parse(html)
 let text = try! oak.attributedString(tree)
 textView.attributedText = text
 
-
-XCPlaygroundPage.currentPage.liveView = textView
-
-
+PlaygroundPage.current.liveView = textView
