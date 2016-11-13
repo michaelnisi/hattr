@@ -3,7 +3,7 @@
 
 # hattr - parse HTML
 
-This **hattr** package provides a simple HTML parser to efficiently transform HTML snippets into attributed strings.
+The **hattr** package provides a simple HTML parser to efficiently transform HTML into attributed strings.
 
 ## Goals
 
