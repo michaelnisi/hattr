@@ -18,9 +18,9 @@ import HTMLAttributor
 
 // html is a string of HTML
 
-let worker = HTMLAttributor()
-let tree = try! worker.parse(html)
-let text = try! worker.attributedString(tree)
+let html = HTMLAttributor()
+let tree = try! html.parse(html)
+let attributedText = try! html.attributedString(tree)
 ```
 
 Find a runnable example in `HTMLPlayground.playground`.

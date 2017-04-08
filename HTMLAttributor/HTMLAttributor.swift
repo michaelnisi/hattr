@@ -23,7 +23,7 @@ public protocol HTMLParsing {
   
   func attributedString(
     _ tree: Node,
-    styles: [String: [String : AnyObject]]
+    styles: [String : [String : AnyObject]]
   ) throws -> NSAttributedString
 }
 
@@ -318,7 +318,7 @@ open class HTMLAttributor: HTMLParsing {
         // Appending
         
         let trimmed = text.trimmingCharacters(
-          in: CharacterSet.newlines
+          in: CharacterSet(charactersIn: "\r\n\t")
         )
         
         var tag: String? = nil
@@ -354,7 +354,7 @@ open class HTMLAttributor: HTMLParsing {
           }
         }()
         
-        let tt =  acc.hasSuffix("\n") ? trimLeft(trimmed) : trimmed
+        let tt =  trimmed
         let str = "\(acc)\(tt)\(n)"
         
         if let t = tag {
@@ -440,6 +440,7 @@ open class HTMLAttributor: HTMLParsing {
   ///
   /// - parameter tree: A tree of DOM nodes.
   /// - throws: Might throw `NSXMLParser` errors.
+  ///
   /// - returns: A simplified string representation of the tree.
   open func string(_ tree: Node) throws -> String {
     let (str, _) = try taggedString(tree, opts: .BracketLinks)

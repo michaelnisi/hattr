@@ -11,22 +11,22 @@ import XCTest
 
 class HTMLAttributorTests: XCTestCase {
 
-  var hattr: HTMLAttributor!
+  var html: HTMLAttributor!
 
   override func setUp() {
     super.setUp()
-    hattr = HTMLAttributor()
+    html = HTMLAttributor()
   }
 
   override func tearDown() {
-    hattr = nil
+    html = nil
     super.tearDown()
   }
 
   func testString() {
     func f(_ str: String) -> String {
-      let tree = try! self.hattr.parse(str)
-      return try! self.hattr.string(tree)
+      let tree = try! self.html.parse(str)
+      return try! self.html.string(tree)
     }
     
     // Not a fan of these trailing new lines.
@@ -67,8 +67,8 @@ class HTMLAttributorTests: XCTestCase {
   
   func testAttributedString() {
     func f(_ str: String) -> NSAttributedString {
-      let tree = try! self.hattr.parse(str)
-      return try! self.hattr.attributedString(tree)
+      let tree = try! self.html.parse(str)
+      return try! self.html.attributedString(tree)
     }
     let wanted = [
       "",
@@ -78,7 +78,9 @@ class HTMLAttributorTests: XCTestCase {
       "Aliens?\n\nWhy yes.\nOh noes …",
       "a\nb\nc\n",
       "This is a simple sample.\n\n",
-      "This\n\nSucks\n\n"
+      "This\n\nSucks\n\n",
+      "  Whitespace?",
+      "  Whitespace?\n\n"
     ]
     
     let found = [
@@ -89,12 +91,12 @@ class HTMLAttributorTests: XCTestCase {
       f("<h1>Aliens?</h1>Why yes.<br/>Oh noes …"),
       f("<ul><li>a</li><li>b</li><li>c</li></ul>"),
       f("<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"),
-      f("<h1>This</h1><h1>Sucks</h1>")
+      f("<h1>This</h1><h1>Sucks</h1>"),
+      f("  Whitespace?"),
+      f("<h1>  Whitespace?</h1>")
     ]
     
     XCTAssertEqual(wanted.count, found.count)
-    
-    // TODO: Test attributes
     
     for (i, b) in wanted.enumerated() {
       let a = found[i].string
@@ -104,7 +106,7 @@ class HTMLAttributorTests: XCTestCase {
   
   func testAllNodesCount() {
     func f(_ str: String) -> Int {
-      let tree = try! self.hattr.parse(str)
+      let tree = try! self.html.parse(str)
       return allNodes(tree).count
     }
     let tests = [
@@ -126,29 +128,30 @@ class HTMLAttributorTests: XCTestCase {
     XCTAssertEqual(trimLeft("   hello"), "hello")
   }
   
-  // Countering my subsiding motivation to continue writing this software, I
-  // compared performance: right now our version is 10X faster.
+  // Countering my subsiding motivation to proceed, I compared performance: 
+  // right now our version is 10X faster, generously ignoring initialization.
   
   func testAttributedStringPerformance() {
     self.measure {
       let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
-      let tree = try! self.hattr.parse(html)
-      let _ = try! self.hattr.attributedString(tree)
+      let tree = try! self.html.parse(html)
+      let _ = try! self.html.attributedString(tree)
     }
   }
   
-  // Measuring Apple's code here for comparison, which takes ages to start its
-  // initial run because it has to load a plethora of dependencies first.
+  // Measuring Apple's full blown HTML parser for comparison, which takes ages 
+  // to start its initial run because it has to load a plethora of dependencies 
+  // first.
   
   func testDataUsingEncodingPerformance() {
     self.measure {
       let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
       let data = html.data(using: String.Encoding.utf8)!
-      let opts: [String: AnyObject] = [
-        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType as AnyObject,
-        NSCharacterEncodingDocumentAttribute: String.Encoding.utf8 as AnyObject,
+      let opts: [String : Any] = [
+        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
+        NSCharacterEncodingDocumentAttribute: String.Encoding.utf8.rawValue,
       ]
-      let _ = try! NSMutableAttributedString(
+      let _ = try! NSAttributedString(
         data: data,
         options: opts,
         documentAttributes: nil
