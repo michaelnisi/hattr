@@ -3,13 +3,13 @@
 
 # hattr - parse HTML
 
-The **hattr** package provides a simple HTML parser to efficiently transform HTML into attributed strings.
+The **hattr** package provides a simple HTML parser to efficiently transform HTML into attributed strings for iOS.
 
 ## Goals
 
-- No dependencies
+- No dependencies, except for UIKit
 - Offloadable from main thread
-- Keeping it simple
+- Keeping it simple, stupid
 
 ## Example
 
@@ -18,9 +18,9 @@ import HTMLAttributor
 
 // html is a string of HTML
 
-let html = HTMLAttributor()
-let tree = try! html.parse(html)
-let attributedText = try! html.attributedString(tree)
+let hattr = HTMLAttributor()
+let tree = try! hattr.parse(html)
+let attributedText = try! hattr.attributedString(tree)
 ```
 
 Find a runnable example in `HTMLPlayground.playground`.

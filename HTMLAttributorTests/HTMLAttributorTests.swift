@@ -10,26 +10,24 @@ import XCTest
 @testable import HTMLAttributor
 
 class HTMLAttributorTests: XCTestCase {
-
+  
   var html: HTMLAttributor!
-
+  
   override func setUp() {
     super.setUp()
     html = HTMLAttributor()
   }
-
+  
   override func tearDown() {
     html = nil
     super.tearDown()
   }
-
+  
   func testString() {
     func f(_ str: String) -> String {
       let tree = try! self.html.parse(str)
       return try! self.html.string(tree)
     }
-    
-    // Not a fan of these trailing new lines.
     
     let wanted = [
       "",
@@ -42,13 +40,13 @@ class HTMLAttributorTests: XCTestCase {
       "First\n\nSecond\n\n",
       "Root copy followed by\n\nA Headline\n\n"
     ]
-
+    
     let html = [
       "",
       "Aliens?",
       "<h1>Aliens?</h1>",
       "<h1>Aliens?</h1>Why yes.",
-      // Note the self-closing '<br/>', NSXMLParser would, not unreasonably, 
+      // Note the self-closing '<br/>', NSXMLParser would, not unreasonably,
       // choke on an open '<br>'.
       "<h1>Aliens?</h1>Why yes.<br/>Oh noes …",
       "<ul><li>a</li><li>b</li><li>c</li></ul>",
@@ -70,6 +68,7 @@ class HTMLAttributorTests: XCTestCase {
       let tree = try! self.html.parse(str)
       return try! self.html.attributedString(tree)
     }
+    
     let wanted = [
       "",
       "Aliens?",
@@ -79,8 +78,8 @@ class HTMLAttributorTests: XCTestCase {
       "a\nb\nc\n",
       "This is a simple sample.\n\n",
       "This\n\nSucks\n\n",
-      "  Whitespace?",
-      "  Whitespace?\n\n"
+      "Whitespace?",
+      "Whitespace?\n\n"
     ]
     
     let found = [
@@ -128,34 +127,39 @@ class HTMLAttributorTests: XCTestCase {
     XCTAssertEqual(trimLeft("   hello"), "hello")
   }
   
-  // Countering my subsiding motivation to proceed, I compared performance: 
+  // Countering my subsiding motivation to proceed, I compared performance:
   // right now our version is 10X faster, generously ignoring initialization.
   
   func testAttributedStringPerformance() {
     self.measure {
-      let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
-      let tree = try! self.html.parse(html)
-      let _ = try! self.html.attributedString(tree)
+      for _ in 0..<10 {
+        let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
+        let tree = try! self.html.parse(html)
+        let _ = try! self.html.attributedString(tree)
+      }
     }
   }
   
-  // Measuring Apple's full blown HTML parser for comparison, which takes ages 
-  // to start its initial run because it has to load a plethora of dependencies 
+  // Measuring Apple's full blown HTML parser for comparison, which takes ages
+  // to start its initial run because it has to load a plethora of dependencies
   // first.
   
-  func testDataUsingEncodingPerformance() {
-    self.measure {
-      let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
-      let data = html.data(using: String.Encoding.utf8)!
-      let opts: [String : Any] = [
-        NSDocumentTypeDocumentAttribute: NSHTMLTextDocumentType,
-        NSCharacterEncodingDocumentAttribute: String.Encoding.utf8.rawValue,
-      ]
-      let _ = try! NSAttributedString(
-        data: data,
-        options: opts,
-        documentAttributes: nil
-      )
-    }
-  }
+//  func testDataUsingEncodingPerformance() {
+//    self.measure {
+//      for _ in 0..<10 {
+//        let html = "<p>This is a <a href=\"demo.html\">simple</a> sample.</p>"
+//        let data = html.data(using: String.Encoding.utf8)!
+//
+//        let _ = try! NSAttributedString(
+//          data: data,
+//          options: [
+//            .documentType: NSAttributedString.DocumentType.html,
+//            .characterEncoding: String.Encoding.utf8.rawValue
+//          ],
+//          documentAttributes: nil
+//        )
+//      }
+//    }
+//  }
 }
+

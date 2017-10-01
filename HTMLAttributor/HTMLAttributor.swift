@@ -9,26 +9,6 @@
 import Foundation
 import UIKit
 
-// MARK: API
-
-public protocol HTMLParsing {
-  
-  // MARK: Creating a tree from HTML
-  
-  func parse(_ html: String) throws -> Node
-  
-  // MARK: Transforming the tree to strings
-  
-  func string(_ tree: Node) throws -> String
-  
-  func attributedString(
-    _ tree: Node,
-    styles: [String : [String : AnyObject]]
-  ) throws -> NSAttributedString
-}
-
-// MARK: - DOM
-
 public struct ElementData {
   let tagName: String
   let attributes: [String : String]
@@ -42,14 +22,14 @@ public enum NodeType {
 public final class Node {
   var children: [Node]
   let type: NodeType
-  internal let uid: UInt
-
-  init(uid: UInt, type: NodeType, children: [Node] = [Node]()) {
+  let uid: Int
+  
+  init(uid: Int, type: NodeType, children: [Node] = [Node]()) {
     self.uid = uid
     self.type = type
     self.children = children
   }
-
+  
   func append(_ node: Node) {
     children.append(node)
   }
@@ -79,9 +59,24 @@ public func ==(lhs: Node, rhs: Node) -> Bool {
 
 extension Node: Hashable {
   public var hashValue: Int {
-    return uid.hashValue
+    return uid
   }
 }
+
+public protocol HTMLParsing {
+  func parse(_ html: String) throws -> Node
+}
+
+public protocol NodeTreeTransforming {
+  func string(_ tree: Node) throws -> String
+  
+  func attributedString(
+    _ tree: Node,
+    styles: [String : [NSAttributedStringKey : Any]]
+  ) throws -> NSAttributedString
+}
+
+// MARK: - Internals
 
 func allNodes(_ root: Node) -> [Node] {
   return root.children.reduce([root]) { acc, node in
@@ -113,7 +108,7 @@ func parent(_ node: Node, nodes: [Node]) -> Node {
   }
   assert(!parents.isEmpty, "\(node.uid) is an orphan")
   assert(parents.count == 1, "multiple parents")
-
+  
   let p = parents.first!
   
   switch p.type {
@@ -126,32 +121,30 @@ func parent(_ node: Node, nodes: [Node]) -> Node {
   return p
 }
 
-// MARK: Parser
-
 private final class ParserDelegate: NSObject, XMLParserDelegate {
-
+  
   // MARK: State
-
+  
   // The root node of our document.
   var root: Node!
-
+  
   // The current node in the tree while parsing.
   private var current: Node!
   
   // A count of the encountered nodes.
-  private var count: UInt = 0
+  private var count: Int = 0
   
-  func uid() -> UInt {
+  func uid() -> Int {
     count += 1
     return count
   }
-
+  
   // MARK: API
-
+  
   // Container to accumulate strings for text nodes. Should be set to `nil`
   // after all its content has been consumed.
   var text: String?
-
+  
   @discardableResult private func consumeText() -> Bool {
     guard let t = text else {
       return false
@@ -170,11 +163,10 @@ private final class ParserDelegate: NSObject, XMLParserDelegate {
     didStartElement elementName: String,
     namespaceURI: String?,
     qualifiedName qName: String?,
-    attributes attributeDict: [String : String]
-  ) {
+    attributes attributeDict: [String : String]) {
     let data = ElementData(tagName: elementName, attributes: attributeDict)
     let node = Node(uid: uid(), type: .element(data))
-
+    
     if elementName == "root" {
       root = node
     } else {
@@ -183,53 +175,50 @@ private final class ParserDelegate: NSObject, XMLParserDelegate {
       // When a new element starts, we have to make sure we have consumed all
       // previously accumulated text and begin a new string.
       consumeText()
-
+      
       let p = candidate(root, node: current)
       p.append(node)
     }
     
     current = node
   }
-
+  
   @objc fileprivate func parser(
     _ parser: XMLParser,
-    foundCharacters string: String
-  ) {
+    foundCharacters string: String) {
     text = (text ?? "") + string
   }
-
+  
   @objc fileprivate func parser(
     _ parser: XMLParser,
     didEndElement elementName: String,
     namespaceURI: String?,
-    qualifiedName qName: String?
-  ) {
+    qualifiedName qName: String?) {
     assert(root != nil, "root cannot be nil")
     
     consumeText()
-
+    
     guard elementName != "root" else {
       return
     }
-
+    
     let nodes = allNodes(root)
     let p = parent(current, nodes: nodes)
     current = p
- }
-
+  }
+  
   @objc fileprivate func parserDidEndDocument(_ parser: XMLParser) {
     current = nil
     text = nil
   }
 }
 
-func NSRange(
-  from range: Range<String.Index>,
-  within string: String
-) -> NSRange {
+func NSRange(from range: Range<String.Index>, within string: String)
+  -> NSRange {
   let utf16view = string.utf16
-  let from = range.lowerBound.samePosition(in: utf16view)
-  let to = range.upperBound.samePosition(in: utf16view)
+  let from = range.lowerBound.samePosition(in: utf16view)!
+  let to = range.upperBound.samePosition(in: utf16view)!
+  
   let loc = utf16view.distance(from: utf16view.startIndex, to: from)
   let len = utf16view.distance(from: from, to: to)
   return NSMakeRange(loc, len)
@@ -243,28 +232,11 @@ func trimLeft(_ string: String) -> String {
   return string
 }
 
-open class HTMLAttributor: HTMLParsing {
+public final class HTMLAttributor {
+  
   private var delegate: ParserDelegate!
   
   public init() {}
-  
-  open func parse(_ html: String) throws -> Node {
-    delegate = ParserDelegate()
-
-    // Always adding a root node to ensure somewhat valid XML.
-    let str = "<root>\(html)</root>"
-    let data = str.data(using: String.Encoding.utf8)!
-
-    let parser = XMLParser(data: data)
-    parser.shouldProcessNamespaces = false
-    parser.delegate = delegate
-
-    guard parser.parse() else {
-      throw parser.parserError!
-    }
-    
-    return delegate.root
-  }
   
   private struct TaggedRange {
     let tag: String
@@ -278,8 +250,6 @@ open class HTMLAttributor: HTMLParsing {
     
     static let BracketLinks = StringOptions(rawValue: 1)
   }
-  
-  // TODO: Use paragraph styles for p tags
   
   private func taggedString(
     _ tree: Node,
@@ -301,10 +271,10 @@ open class HTMLAttributor: HTMLParsing {
             return acc
           }
           return "\(acc)\(acc.hasSuffix("\n") ? "\n" : "\n\n")"
-        
-        // Disallowing more than two consecutive line breaks, assuming we have 
-        // no control over the HTML input. Deliberately done here, not in the 
-        // parse phase, to keep the tree authentic.
+          
+          // Disallowing more than two consecutive line breaks, assuming we have
+          // no control over the HTML input. Deliberately, done here, not in the
+          // parse phase, to keep the tree authentic.
           
         case "br":
           if acc.isEmpty || acc.hasSuffix("\n\n") {
@@ -315,16 +285,23 @@ open class HTMLAttributor: HTMLParsing {
         }
       case .text(let text):
         
+        // Trimming
+        
+        let trimmed: String = {
+          let set = CharacterSet(charactersIn: "\r\n\t")
+          guard acc != "", !acc.hasSuffix("\n") else {
+            // Removing spaces at beginning of lines.
+            return trimLeft(text).trimmingCharacters(in: set)
+          }
+          return text.trimmingCharacters(in: set)
+        }()
+        
         // Appending
         
-        let trimmed = text.trimmingCharacters(
-          in: CharacterSet(charactersIn: "\r\n\t")
-        )
+        var tag: String?
+        var attributes: [String : String]?
         
-        var tag: String? = nil
-        var attributes: [String : String]? = nil
-        
-        let n: String = {
+        let suffix: String = {
           let p = parent(node, nodes: nodes)
           switch p.type {
           case .element(let data):
@@ -353,9 +330,8 @@ open class HTMLAttributor: HTMLParsing {
             return ""
           }
         }()
-        
-        let tt =  trimmed
-        let str = "\(acc)\(tt)\(n)"
+      
+        let str = "\(acc)\(trimmed)\(suffix)"
         
         if let t = tag {
           let r = acc.endIndex ..< str.endIndex
@@ -371,39 +347,68 @@ open class HTMLAttributor: HTMLParsing {
     return (str, ranges)
   }
   
-  /// Exposing the default styles for informational purposes only.
-  open static let defaultStyles: [String: [String : AnyObject]] = [
+  public static let defaultStyles: [String: [NSAttributedStringKey : Any]] = [
     "root": [
-      NSFontAttributeName: UIFont.preferredFont(forTextStyle: UIFontTextStyle.body),
-      NSForegroundColorAttributeName: UIColor.darkText
+      NSAttributedStringKey.font: UIFont.preferredFont(forTextStyle: UIFontTextStyle.body),
+      NSAttributedStringKey.foregroundColor: UIColor.darkText
     ],
     "h1": [
-      NSFontAttributeName: UIFont.preferredFont(forTextStyle: UIFontTextStyle.title1),
-      NSForegroundColorAttributeName: UIColor.darkText
+      NSAttributedStringKey.font: UIFont.preferredFont(forTextStyle: UIFontTextStyle.title1),
+      NSAttributedStringKey.foregroundColor: UIColor.darkText
     ],
     "a": [
-      NSFontAttributeName: UIFont.preferredFont(forTextStyle: UIFontTextStyle.body),
-      NSForegroundColorAttributeName: UIColor.blue
+      NSAttributedStringKey.font: UIFont.preferredFont(forTextStyle: UIFontTextStyle.body),
+      NSAttributedStringKey.foregroundColor: UIColor.blue
     ]
   ]
   
-  // MARK: API
+}
+
+// MARK: - HTMLParsing
+
+extension HTMLAttributor: HTMLParsing {
   
+  /// Parses `html` into a node tree.
+  public func parse(_ html: String) throws -> Node {
+    delegate = ParserDelegate()
+    
+    // Always adding a root node to ensure somewhat valid XML.
+    let str = "<root>\(html)</root>"
+    let data = str.data(using: String.Encoding.utf8)!
+    
+    let parser = XMLParser(data: data)
+    parser.shouldProcessNamespaces = false
+    parser.delegate = delegate
+    
+    guard parser.parse() else {
+      throw parser.parserError!
+    }
+    
+    return delegate.root
+  }
+  
+}
+
+// MARK: - NodeTreeTransforming
+
+extension HTMLAttributor: NodeTreeTransforming {
+
   /// Creates and returns an attributed string from the provided tree.
   ///
   /// It should be obvious, but please note: **this can never be a proper HTML
   /// interpreter**, the attributes are set redundantly by tag name, without
   /// any optimizations—*the last one wins*.
-  /// 
-  /// - parameter tree: The tree to use as a source for the attributed string.
-  /// - parameter styles: A dictionary of styles, dictionaries of attributes
-  /// identified by tag names, to be set on the resulting attributed string. 
+  ///
+  /// - Parameters:
+  ///   - tree: The tree to use as a source for the attributed string.
+  ///   - styles: A dictionary of styles, dictionaries of attributes
+  /// identified by tag names, to be set on the resulting attributed string.
   /// Without styles `HTMLAttributor.defaultStyles` are used.
-  /// - throws: Might throws `NSXMLParser` errors.
-  /// - returns: An attributed Cocoa string.
-  open func attributedString(
+  /// - Throws: Might throws `NSXMLParser` errors.
+  /// - Returns: An attributed Cocoa string.
+  public func attributedString(
     _ tree: Node,
-    styles: [String: [String : AnyObject]] = HTMLAttributor.defaultStyles
+    styles: [String: [NSAttributedStringKey : Any]] = HTMLAttributor.defaultStyles
   ) throws -> NSAttributedString {
     let (str, trs) = try taggedString(tree)
     
@@ -422,7 +427,7 @@ open class HTMLAttributor: HTMLParsing {
       if tag == "a" {
         if let href = tr.attributes?["href"] {
           if let url = URL(string: href) {
-            attrs[NSLinkAttributeName] = url as AnyObject?
+            attrs[NSAttributedStringKey.link] = url as AnyObject?
           }
         }
       }
@@ -435,15 +440,18 @@ open class HTMLAttributor: HTMLParsing {
     return astr
   }
   
-  /// An, admittedly rather limited, string representation of the tree, mainly
-  /// used for developing and debugging this thing.
+  /// An, admittedly rather limited, string representation of the tree, good
+  /// enough for developing and debugging.
   ///
-  /// - parameter tree: A tree of DOM nodes.
-  /// - throws: Might throw `NSXMLParser` errors.
+  /// - Parameter tree: A tree of DOM nodes.
+  /// - Throws: Might throw `NSXMLParser` errors.
   ///
-  /// - returns: A simplified string representation of the tree.
-  open func string(_ tree: Node) throws -> String {
+  /// - Returns: A simplified string representation of the tree.
+  public func string(_ tree: Node) throws -> String {
     let (str, _) = try taggedString(tree, opts: .BracketLinks)
     return str
   }
+
 }
+
+
