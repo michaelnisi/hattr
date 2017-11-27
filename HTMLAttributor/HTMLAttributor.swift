@@ -226,7 +226,7 @@ func NSRange(from range: Range<String.Index>, within string: String)
 
 func trimLeft(_ string: String) -> String {
   if string.hasPrefix(" ") {
-    let str = String(string.characters.dropFirst())
+    let str = String(string.dropFirst())
     return trimLeft(str)
   }
   return string
