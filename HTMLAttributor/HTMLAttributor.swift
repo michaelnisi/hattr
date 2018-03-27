@@ -439,7 +439,7 @@ extension HTMLAttributor: HTMLParsing {
 // MARK: - NodeTreeTransforming
 
 extension HTMLAttributor: NodeTreeTransforming {
-
+  
   public func attributedString(
     _ tree: Node,
     styles: [String: [NSAttributedStringKey : Any]] = HTMLAttributor.defaultStyles

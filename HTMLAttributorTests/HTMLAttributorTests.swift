@@ -23,12 +23,31 @@ class HTMLAttributorTests: XCTestCase {
     super.tearDown()
   }
   
-  func testString() {
-    func f(_ str: String) -> String {
-      let tree = try! self.html.parse(str)
-      return try! self.html.string(tree)
-    }
+  func string(_ str: String) -> String {
+    let tree = try! self.html.parse(str)
+    return try! self.html.string(tree)
+  }
+  
+  func testSpaces() {
+    let wanted = [
+      "Twitter: @SlateRepresent",
+      "Ending a sentence with a link."
+    ]
+
+    let html = [
+      "Twitter:<a> @SlateRepresent</a>",
+      "Ending a sentence with a <a>link</a>."
+    ]
     
+    XCTAssertEqual(wanted.count, html.count)
+    
+    for (i, b) in wanted.enumerated() {
+      let a = string(html[i])
+      XCTAssertEqual(a, b)
+    }
+  }
+  
+  func testString() {
     let wanted = [
       "",
       "Aliens?",
@@ -58,7 +77,7 @@ class HTMLAttributorTests: XCTestCase {
     XCTAssertEqual(wanted.count, html.count)
     
     for (i, b) in wanted.enumerated() {
-      let a = f(html[i])
+      let a = string(html[i])
       XCTAssertEqual(a, b)
     }
   }
@@ -81,7 +100,7 @@ class HTMLAttributorTests: XCTestCase {
       "Whitespace?",
       "Whitespace?\n\n"
     ]
-    
+
     let found = [
       f(""),
       f("Aliens?"),
