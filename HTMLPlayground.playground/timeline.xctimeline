@@ -3,12 +3,27 @@
    version = "3.0">
    <TimelineItems>
       <LoggerValueHistoryTimelineItem
-         documentLocation = "file:///Users/michaelnisi/workspace/hattr/HTMLPlayground.playground#CharacterRangeLen=0&amp;CharacterRangeLoc=113&amp;EndingColumnNumber=21&amp;EndingLineNumber=4&amp;StartingColumnNumber=21&amp;StartingLineNumber=4&amp;Timestamp=528457962.578983"
+         documentLocation = "file:///Users/michael/swift/hattr/HTMLPlayground.playground#CharacterRangeLen=2262&amp;CharacterRangeLoc=113&amp;EndingColumnNumber=3&amp;EndingLineNumber=13&amp;StartingColumnNumber=21&amp;StartingLineNumber=4&amp;Timestamp=543774066.084699"
          selectedRepresentationIndex = "0"
          shouldTrackSuperviewWidth = "NO">
       </LoggerValueHistoryTimelineItem>
       <LoggerValueHistoryTimelineItem
-         documentLocation = "file:///Users/michaelnisi/workspace/hattr/HTMLPlayground.playground#CharacterRangeLen=8&amp;CharacterRangeLoc=863&amp;EndingColumnNumber=9&amp;EndingLineNumber=30&amp;StartingColumnNumber=1&amp;StartingLineNumber=30&amp;Timestamp=528457962.57916"
+         documentLocation = "file:///Users/michael/swift/hattr/HTMLPlayground.playground#CharacterRangeLen=8&amp;CharacterRangeLoc=3798&amp;EndingColumnNumber=4&amp;EndingLineNumber=33&amp;StartingColumnNumber=39&amp;StartingLineNumber=32&amp;Timestamp=543774066.084869"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/michael/swift/hattr/HTMLPlayground.playground#CharacterRangeLen=6&amp;CharacterRangeLoc=3800&amp;EndingColumnNumber=4&amp;EndingLineNumber=33&amp;StartingColumnNumber=41&amp;StartingLineNumber=32&amp;Timestamp=543774066.085005"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/michael/swift/hattr/HTMLPlayground.playground#CharacterRangeLen=8&amp;CharacterRangeLoc=3779&amp;EndingColumnNumber=28&amp;EndingLineNumber=32&amp;StartingColumnNumber=20&amp;StartingLineNumber=32&amp;Timestamp=543774066.085137"
+         selectedRepresentationIndex = "0"
+         shouldTrackSuperviewWidth = "NO">
+      </LoggerValueHistoryTimelineItem>
+      <LoggerValueHistoryTimelineItem
+         documentLocation = "file:///Users/michael/swift/hattr/HTMLPlayground.playground#CharacterRangeLen=8&amp;CharacterRangeLoc=3803&amp;EndingColumnNumber=9&amp;EndingLineNumber=33&amp;StartingColumnNumber=1&amp;StartingLineNumber=33&amp;Timestamp=543774066.085268"
          selectedRepresentationIndex = "0"
          shouldTrackSuperviewWidth = "NO">
       </LoggerValueHistoryTimelineItem>

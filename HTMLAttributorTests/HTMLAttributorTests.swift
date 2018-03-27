@@ -128,7 +128,7 @@ class HTMLAttributorTests: XCTestCase {
   }
   
   // Countering my subsiding motivation to proceed, I compared performance:
-  // right now our version is 10X faster, generously ignoring initialization.
+  // NSAttributedString.DocumentType.html is 2000X slower.
   
   func testAttributedStringPerformance() {
     self.measure {
@@ -161,5 +161,6 @@ class HTMLAttributorTests: XCTestCase {
 //      }
 //    }
 //  }
+  
 }
 

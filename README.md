@@ -9,14 +9,14 @@ The **hattr** package provides a simple HTML parser to efficiently transform HTM
 
 - No dependencies, except for UIKit
 - Offloadable from main thread
-- Keeping it simple, stupid
+- 😘
 
 ## Example
 
 ```swift
 import HTMLAttributor
 
-// html is a string of HTML
+// html is an HTML String
 
 let hattr = HTMLAttributor()
 let tree = try! hattr.parse(html)

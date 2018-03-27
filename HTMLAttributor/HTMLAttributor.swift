@@ -68,8 +68,31 @@ public protocol HTMLParsing {
 }
 
 public protocol NodeTreeTransforming {
+  
+  /// An, admittedly rather limited, string representation of the tree—good
+  /// enough for developing and debugging.
+  ///
+  /// - Parameter tree: A tree of DOM nodes.
+  /// - Throws: May throw `NSXMLParser` errors.
+  ///
+  /// - Returns: A simplified string representation of the tree.
   func string(_ tree: Node) throws -> String
   
+  /// Creates and returns an attributed string from the provided tree.
+  ///
+  /// It should be obvious, but please note: **this can never be a proper HTML
+  /// interpreter**, the attributes are set redundantly by tag name, without
+  /// any optimizations—*the last one wins*.
+  ///
+  /// - Parameters:
+  ///   - tree: The tree to use as a source for the attributed string.
+  ///   - styles: A dictionary of styles, dictionaries of attributes
+  /// identified by tag names, to be set on the resulting attributed string.
+  /// Without styles `HTMLAttributor.defaultStyles` are used.
+  ///
+  /// - Throws: May throws `NSXMLParser` errors.
+  ///
+  /// - Returns: An attributed Cocoa string.
   func attributedString(
     _ tree: Node,
     styles: [String : [NSAttributedStringKey : Any]]
@@ -232,6 +255,22 @@ func trimLeft(_ string: String) -> String {
   return string
 }
 
+func beginsWithPunctuation(string: String) -> Bool {
+  guard let first = string.first else {
+    return false
+  }
+  let str = String(first)
+  return str.rangeOfCharacter(from: .punctuationCharacters) != nil
+}
+
+func endsWithPunctuation(string: String) -> Bool {
+  guard let last = string.last else {
+    return false
+  }
+  let str = String(last)
+  return str.rangeOfCharacter(from: .punctuationCharacters) != nil
+}
+
 public final class HTMLAttributor {
   
   private var delegate: ParserDelegate!
@@ -248,7 +287,7 @@ public final class HTMLAttributor {
     let rawValue: Int
     init(rawValue: Int) { self.rawValue = rawValue }
     
-    static let BracketLinks = StringOptions(rawValue: 1)
+    static let bracketLinks = StringOptions(rawValue: 1)
   }
   
   private func taggedString(
@@ -259,65 +298,70 @@ public final class HTMLAttributor {
     
     var ranges = [TaggedRange]()
     
-    let str = nodes.reduce("") { acc, node in
+    let result = nodes.reduce("") { acc, node in
       switch node.type {
       case .element(let data):
         
         // Prepending
         
         switch data.tagName {
-        case "h1", "h2", "h3", "h4", "h5", "h6", "p", "ul", "ol":
-          if acc.isEmpty || acc.hasSuffix("\n\n") {
+        case "a":
+          guard !acc.isEmpty, !acc.hasSuffix("\n"), !acc.hasSuffix(" ") else {
             return acc
           }
-          return "\(acc)\(acc.hasSuffix("\n") ? "\n" : "\n\n")"
-          
-          // Disallowing more than two consecutive line breaks, assuming we have
-          // no control over the HTML input. Deliberately, done here, not in the
-          // parse phase, to keep the tree authentic.
+          return "\(acc) "
           
         case "br":
+          // Limiting empty lines to one.
           if acc.isEmpty || acc.hasSuffix("\n\n") {
             return acc
           }
           return "\(acc)\n"
+          
+        case "p", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6":
+          if acc.isEmpty || acc.hasSuffix("\n\n") {
+            return acc
+          }
+          return "\(acc)\n\n"
+          
         default: return acc
         }
       case .text(let text):
+
+        // Appending
         
-        // Trimming
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
         
-        let trimmed: String = {
-          let set = CharacterSet(charactersIn: "\r\n\t")
-          guard acc != "", !acc.hasSuffix("\n") else {
-            // Removing spaces at beginning of lines.
-            return trimLeft(text).trimmingCharacters(in: set)
+        let prefix: String = {
+          guard
+            !acc.isEmpty,
+            !acc.hasSuffix(" "),
+            !acc.hasSuffix("\n"),
+            !beginsWithPunctuation(string: trimmed) else {
+            return ""
           }
-          return text.trimmingCharacters(in: set)
+          return " "
         }()
         
-        // Appending
+        let p = parent(node, nodes: nodes)
         
         var tag: String?
         var attributes: [String : String]?
         
         let suffix: String = {
-          let p = parent(node, nodes: nodes)
           switch p.type {
           case .element(let data):
-            
             tag = data.tagName
             attributes = data.attributes
-            
             switch data.tagName {
             case "a":
-              if opts.contains(.BracketLinks) {
+              if opts.contains(.bracketLinks) {
                 if let href = attributes!["href"] {
                   return " (\(href))"
                 }
               }
               return ""
-            case "h1", "h2", "h3", "h4", "h5", "h6", "p", "ul", "ol":
+            case "p", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6":
               if node == p.children.last {
                 return "\n\n"
               }
@@ -331,7 +375,7 @@ public final class HTMLAttributor {
           }
         }()
       
-        let str = "\(acc)\(trimmed)\(suffix)"
+        let str = "\(acc)\(prefix)\(trimmed)\(suffix)"
         
         if let t = tag {
           let r = acc.endIndex ..< str.endIndex
@@ -344,20 +388,23 @@ public final class HTMLAttributor {
       }
     }
     
-    return (str, ranges)
+    return (result, ranges)
   }
   
   public static let defaultStyles: [String: [NSAttributedStringKey : Any]] = [
     "root": [
-      NSAttributedStringKey.font: UIFont.preferredFont(forTextStyle: UIFontTextStyle.body),
+      NSAttributedStringKey.font: UIFont.preferredFont(
+        forTextStyle: UIFontTextStyle.body),
       NSAttributedStringKey.foregroundColor: UIColor.darkText
     ],
     "h1": [
-      NSAttributedStringKey.font: UIFont.preferredFont(forTextStyle: UIFontTextStyle.title1),
+      NSAttributedStringKey.font: UIFont.preferredFont(
+        forTextStyle: UIFontTextStyle.headline),
       NSAttributedStringKey.foregroundColor: UIColor.darkText
     ],
     "a": [
-      NSAttributedStringKey.font: UIFont.preferredFont(forTextStyle: UIFontTextStyle.body),
+      NSAttributedStringKey.font: UIFont.preferredFont(
+        forTextStyle: UIFontTextStyle.body),
       NSAttributedStringKey.foregroundColor: UIColor.blue
     ]
   ]
@@ -393,19 +440,6 @@ extension HTMLAttributor: HTMLParsing {
 
 extension HTMLAttributor: NodeTreeTransforming {
 
-  /// Creates and returns an attributed string from the provided tree.
-  ///
-  /// It should be obvious, but please note: **this can never be a proper HTML
-  /// interpreter**, the attributes are set redundantly by tag name, without
-  /// any optimizations—*the last one wins*.
-  ///
-  /// - Parameters:
-  ///   - tree: The tree to use as a source for the attributed string.
-  ///   - styles: A dictionary of styles, dictionaries of attributes
-  /// identified by tag names, to be set on the resulting attributed string.
-  /// Without styles `HTMLAttributor.defaultStyles` are used.
-  /// - Throws: Might throws `NSXMLParser` errors.
-  /// - Returns: An attributed Cocoa string.
   public func attributedString(
     _ tree: Node,
     styles: [String: [NSAttributedStringKey : Any]] = HTMLAttributor.defaultStyles
@@ -440,15 +474,8 @@ extension HTMLAttributor: NodeTreeTransforming {
     return astr
   }
   
-  /// An, admittedly rather limited, string representation of the tree, good
-  /// enough for developing and debugging.
-  ///
-  /// - Parameter tree: A tree of DOM nodes.
-  /// - Throws: Might throw `NSXMLParser` errors.
-  ///
-  /// - Returns: A simplified string representation of the tree.
   public func string(_ tree: Node) throws -> String {
-    let (str, _) = try taggedString(tree, opts: .BracketLinks)
+    let (str, _) = try taggedString(tree, opts: .bracketLinks)
     return str
   }
 
