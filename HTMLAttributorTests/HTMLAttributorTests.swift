@@ -28,6 +28,45 @@ class HTMLAttributorTests: XCTestCase {
     return try! self.html.string(tree)
   }
   
+  func testEnding() {
+    let wanted = [
+      "abc"
+    ]
+    
+    let html = [
+      "<p>abc</p>"
+    ]
+    
+    XCTAssertEqual(wanted.count, html.count)
+    
+    for (i, b) in wanted.enumerated() {
+      let a = string(html[i])
+      XCTAssertEqual(a, b)
+    }
+  }
+  
+  func testWhitespaces() {
+    let wanted = [
+      "abc",
+      "abc"
+    ]
+    
+    let html = [
+      "   abc   ",
+      """
+      
+        abc
+      """
+    ]
+    
+    XCTAssertEqual(wanted.count, html.count)
+    
+    for (i, b) in wanted.enumerated() {
+      let a = string(html[i])
+      XCTAssertEqual(a, b)
+    }
+  }
+  
   func testSpaces() {
     let wanted = [
       "Twitter: @SlateRepresent",
@@ -51,13 +90,13 @@ class HTMLAttributorTests: XCTestCase {
     let wanted = [
       "",
       "Aliens?",
-      "Aliens?\n\n",
+      "Aliens?",
       "Aliens?\n\nWhy yes.",
       "Aliens?\n\nWhy yes.\nOh noes …",
-      "a\nb\nc\n",
-      "This is a simple (demo.html) sample.\n\n",
-      "First\n\nSecond\n\n",
-      "Root copy followed by\n\nA Headline\n\n"
+      "a\nb\nc",
+      "This is a simple (demo.html) sample.",
+      "First\n\nSecond",
+      "Root copy followed by\n\nA Headline"
     ]
     
     let html = [
@@ -91,14 +130,14 @@ class HTMLAttributorTests: XCTestCase {
     let wanted = [
       "",
       "Aliens?",
-      "Aliens?\n\n",
+      "Aliens?",
       "Aliens?\n\nWhy yes.",
       "Aliens?\n\nWhy yes.\nOh noes …",
-      "a\nb\nc\n",
-      "This is a simple sample.\n\n",
-      "This\n\nSucks\n\n",
+      "a\nb\nc",
+      "This is a simple sample.",
+      "This\n\nSucks",
       "Whitespace?",
-      "Whitespace?\n\n"
+      "Whitespace?"
     ]
 
     let found = [

@@ -330,7 +330,7 @@ public final class HTMLAttributor {
 
         // Appending
         
-        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         
         let prefix: String = {
           guard
@@ -349,6 +349,10 @@ public final class HTMLAttributor {
         var attributes: [String : String]?
         
         let suffix: String = {
+          guard node.uid != nodes.count else {
+            return ""
+          }
+          
           switch p.type {
           case .element(let data):
             tag = data.tagName
