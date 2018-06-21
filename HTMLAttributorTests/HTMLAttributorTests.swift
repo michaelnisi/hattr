@@ -28,6 +28,36 @@ class HTMLAttributorTests: XCTestCase {
     return try! self.html.string(tree)
   }
   
+  func testHTMLEntities() {
+    let wanted = [
+      """
+      Puromac es una conversación sobre todo el mundo de Apple entre dos viejos amigos, uno que originalmente era un fanático de Windows, y el otro que es un entusiasta de Apple de toda la vida. Cada episodio es una mezcla de consejos, trucos, recomendaciones de aplicaciones, noticias y análisis.</br>
+      (<i>Puromac is a conversation about all things Apple between two old friends, one who was originally a die-hard Windows user, and the other a lifelong Apple enthusiast.</i>) Hosted by Federico Hatoum & Flavio Guinsburg.
+      """,
+      """
+      Puromac es una conversación sobre todo el mundo de Apple entre dos viejos amigos, uno que originalmente era un fanático de Windows, y el otro que es un entusiasta de Apple de toda la vida. Cada episodio es una mezcla de consejos, trucos, recomendaciones de aplicaciones, noticias y análisis.
+      (Puromac is a conversation about all things Apple between two old friends, one who was originally a die-hard Windows user, and the other a lifelong Apple enthusiast.) Hosted by Federico Hatoum & Flavio Guinsburg.
+      """
+    ]
+    
+    let html = [
+      """
+      Puromac es una conversación sobre todo el mundo de Apple entre dos viejos amigos, uno que originalmente era un fanático de Windows, y el otro que es un entusiasta de Apple de toda la vida. Cada episodio es una mezcla de consejos, trucos, recomendaciones de aplicaciones, noticias y análisis.&lt;/br&gt;
+      (&lt;i&gt;Puromac is a conversation about all things Apple between two old friends, one who was originally a die-hard Windows user, and the other a lifelong Apple enthusiast.&lt;/i&gt;) Hosted by Federico Hatoum &amp; Flavio Guinsburg.
+      """,
+      """
+      Puromac es una conversación sobre todo el mundo de Apple entre dos viejos amigos, uno que originalmente era un fanático de Windows, y el otro que es un entusiasta de Apple de toda la vida. Cada episodio es una mezcla de consejos, trucos, recomendaciones de aplicaciones, noticias y análisis.<br /> (Puromac is a conversation about all things Apple between two old friends, one who was originally a die-hard Windows user, and the other a lifelong Apple enthusiast.) Hosted by Federico Hatoum &amp; Flavio Guinsburg.
+      """
+    ]
+    
+    XCTAssertEqual(wanted.count, html.count)
+    
+    for (i, b) in wanted.enumerated() {
+      let a = string(html[i])
+      XCTAssertEqual(a, b)
+    }
+  }
+  
   func testEnding() {
     let wanted = [
       "abc"
