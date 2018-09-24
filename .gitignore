@@ -12,6 +12,7 @@
 *.perspectivev3
 *.xccheckout
 *.xcuserstate
+*.xcworkspace
 DerivedData
 build/
 xcuserdata

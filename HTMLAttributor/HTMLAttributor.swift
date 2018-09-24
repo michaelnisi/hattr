@@ -95,7 +95,7 @@ public protocol NodeTreeTransforming {
   /// - Returns: An attributed Cocoa string.
   func attributedString(
     _ tree: Node,
-    styles: [String : [NSAttributedStringKey : Any]]
+    styles: [String : [NSAttributedString.Key : Any]]
   ) throws -> NSAttributedString
 }
 
@@ -395,21 +395,21 @@ public final class HTMLAttributor {
     return (result, ranges)
   }
   
-  public static let defaultStyles: [String: [NSAttributedStringKey : Any]] = [
+  public static let defaultStyles: [String: [NSAttributedString.Key : Any]] = [
     "root": [
-      NSAttributedStringKey.font: UIFont.preferredFont(
-        forTextStyle: UIFontTextStyle.body),
-      NSAttributedStringKey.foregroundColor: UIColor.darkText
+      NSAttributedString.Key.font: UIFont.preferredFont(
+        forTextStyle: UIFont.TextStyle.body),
+      NSAttributedString.Key.foregroundColor: UIColor.darkText
     ],
     "h1": [
-      NSAttributedStringKey.font: UIFont.preferredFont(
-        forTextStyle: UIFontTextStyle.headline),
-      NSAttributedStringKey.foregroundColor: UIColor.darkText
+      NSAttributedString.Key.font: UIFont.preferredFont(
+        forTextStyle: UIFont.TextStyle.headline),
+      NSAttributedString.Key.foregroundColor: UIColor.darkText
     ],
     "a": [
-      NSAttributedStringKey.font: UIFont.preferredFont(
-        forTextStyle: UIFontTextStyle.body),
-      NSAttributedStringKey.foregroundColor: UIColor.blue
+      NSAttributedString.Key.font: UIFont.preferredFont(
+        forTextStyle: UIFont.TextStyle.body),
+      NSAttributedString.Key.foregroundColor: UIColor.blue
     ]
   ]
   
@@ -446,7 +446,7 @@ extension HTMLAttributor: NodeTreeTransforming {
   
   public func attributedString(
     _ tree: Node,
-    styles: [String: [NSAttributedStringKey : Any]] = HTMLAttributor.defaultStyles
+    styles: [String: [NSAttributedString.Key : Any]] = HTMLAttributor.defaultStyles
   ) throws -> NSAttributedString {
     let (str, trs) = try taggedString(tree)
     
@@ -465,7 +465,7 @@ extension HTMLAttributor: NodeTreeTransforming {
       if tag == "a" {
         if let href = tr.attributes?["href"] {
           if let url = URL(string: href) {
-            attrs[NSAttributedStringKey.link] = url as AnyObject?
+            attrs[NSAttributedString.Key.link] = url as AnyObject?
           }
         }
       }
