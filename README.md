@@ -1,5 +1,5 @@
 [![Build Status](https://secure.travis-ci.org/michaelnisi/hattr.svg)](http://travis-ci.org/michaelnisi/hattr)
-[![Code Coverage](https://codecov.io/github/michaelnisi/hattr/coverage.svg?branch=master)](https://codecov.io/github/michaelnisi/hattr?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/michaelnisi/hattr/badge.svg?branch=master)](https://coveralls.io/github/michaelnisi/hattr?branch=master)
 
 # hattr - parse HTML
 
