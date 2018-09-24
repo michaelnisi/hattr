@@ -15,7 +15,7 @@ The **hattr** package provides a simple HTML parser to efficiently transform HTM
 ```swift
 import HTMLAttributor
 
-// html is an HTML String
+// html is a HTML String
 
 let hattr = HTMLAttributor()
 let tree = try! hattr.parse(html)
