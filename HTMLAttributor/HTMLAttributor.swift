@@ -247,28 +247,35 @@ func NSRange(from range: Range<String.Index>, within string: String)
   return NSMakeRange(loc, len)
 }
 
-func trimLeft(_ string: String) -> String {
-  if string.hasPrefix(" ") {
-    let str = String(string.dropFirst())
-    return trimLeft(str)
-  }
-  return string
+private extension CharacterSet {
+
+  static let noSpacesAfter = CharacterSet(charactersIn: "“(")
+    .union(.whitespacesAndNewlines)
+
+  static let noSpacesBefore = CharacterSet.punctuationCharacters
+    .subtracting(CharacterSet(charactersIn: "-–"))
+
+  static let ignored = CharacterSet.whitespacesAndNewlines
+    .union(.controlCharacters)
+    .union(.illegalCharacters)
 }
 
-func beginsWithPunctuation(string: String) -> Bool {
-  guard let first = string.first else {
-    return false
-  }
-  let str = String(first)
-  return str.rangeOfCharacter(from: .punctuationCharacters) != nil
-}
+private extension String {
 
-func endsWithPunctuation(string: String) -> Bool {
-  guard let last = string.last else {
-    return false
+  func beginsWith(range: CharacterSet) -> Bool {
+    return prefix(1).rangeOfCharacter(from: range) != nil
   }
-  let str = String(last)
-  return str.rangeOfCharacter(from: .punctuationCharacters) != nil
+
+  func endsWith(range: CharacterSet) -> Bool {
+    return suffix(1).rangeOfCharacter(from: range) != nil
+  }
+
+  func sanitized() -> String {
+    return self.trimmingCharacters(in: .ignored)
+      .components(separatedBy: .controlCharacters)
+      .joined()
+  }
+
 }
 
 public final class HTMLAttributor {
@@ -306,7 +313,7 @@ public final class HTMLAttributor {
         
         switch data.tagName {
         case "a":
-          guard !acc.isEmpty, !acc.hasSuffix("\n"), !acc.hasSuffix(" ") else {
+          guard !acc.isEmpty, !acc.endsWith(range: .noSpacesAfter) else {
             return acc
           }
           return "\(acc) "
@@ -329,17 +336,24 @@ public final class HTMLAttributor {
       case .text(let text):
 
         // Appending
-        
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
+        let trimmed = text.sanitized()
+
         let prefix: String = {
+          if !acc.isEmpty, !acc.endsWith(range: .newlines),
+            trimmed.count > 1,
+            trimmed.endsWith(range: CharacterSet(charactersIn: ")")) {
+            return " "
+          }
+
           guard
             !acc.isEmpty,
-            !acc.hasSuffix(" "),
-            !acc.hasSuffix("\n"),
-            !beginsWithPunctuation(string: trimmed) else {
+            !acc.endsWith(range: .noSpacesAfter),
+            !trimmed.beginsWith(range: .noSpacesBefore)
+           else {
             return ""
           }
+
           return " "
         }()
         
@@ -366,10 +380,10 @@ public final class HTMLAttributor {
               }
               return ""
             case "p", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6":
-              if node == p.children.last {
-                return "\n\n"
+              guard node == p.children.last, !trimmed.isEmpty else {
+                return ""
               }
-              return ""
+              return "\n\n"
             case "li":
               return "\n"
             default: return ""

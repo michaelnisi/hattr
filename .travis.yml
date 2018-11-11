@@ -2,8 +2,6 @@ sudo: false
 language: objective-c
 osx_image: xcode10
 script: "travis_retry make test"
-after_success:
-  - bash <(curl -s https://codecov.io/bash) -J 'HTMLAttributor'
 branches:
   only:
     - master
