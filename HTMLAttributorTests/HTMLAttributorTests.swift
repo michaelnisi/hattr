@@ -98,25 +98,27 @@ class HTMLAttributorTests: XCTestCase {
 
   func testSpaces() {
     let wanted = [
-      "Twitter: @SlateRepresent",
-      "Ending a sentence with a link.",
-      "And “link”",
-      "link (after)",
-      "(link)",
-      "A - link - for you",
-      "Ein – link – für dich",
-      "Aktuell zu den Midterms ;)\nUS-Midterm"
+//      "Twitter: @SlateRepresent",
+//      "Ending a sentence with a link.",
+//      "And “link”",
+//      "link (after)",
+//      "(link)",
+//      "A - link - for you",
+//      "Ein – link – für dich",
+//      "Aktuell zu den Midterms ;)\nUS-Midterm",
+      "(link & link)"
     ]
 
     let html = [
-      "Twitter:<a> @SlateRepresent</a>",
-      "Ending a sentence with a <a>link</a>.",
-      "And “<a>link</a>”",
-      "<a>link</a> (after)",
-      "(<a>link</a>)",
-      "A - <a>link</a> - for you",
-      "Ein – <a>link</a> – für dich",
-      "Aktuell zu den Midterms ;)<br />US-Midterm \r\n\r\n \t"
+//      "Twitter:<a> @SlateRepresent</a>",
+//      "Ending a sentence with a <a>link</a>.",
+//      "And “<a>link</a>”",
+//      "<a>link</a> (after)",
+//      "(<a>link</a>)",
+//      "A - <a>link</a> - for you",
+//      "Ein – <a>link</a> – für dich",
+//      "Aktuell zu den Midterms ;)<br />US-Midterm \r\n\r\n \t",
+      "(<a>link</a> &amp; <a>link</a> )"
     ]
 
     XCTAssertEqual(html.count, wanted.count)
@@ -220,6 +222,28 @@ class HTMLAttributorTests: XCTestCase {
     for t in tests {
       XCTAssertEqual(t.0, t.1)
     }
+  }
+
+  func testInvalidURL() {
+    let bundle = Bundle.init(for: classForCoder)
+    let url = bundle.url(forResource: "missingLink", withExtension: "html")!
+    let data = try! Data(contentsOf: url)
+    let str = String(data: data, encoding: .utf8)!
+
+    let tree = try! self.html.parse(str)
+    let attrStr = try! self.html.attributedString(tree)
+    let all =  NSMakeRange(0, attrStr.length)
+
+    var found = [URL]()
+
+    attrStr.enumerateAttribute(.link, in: all) { attr, range, ref in
+      guard let url = attr as? URL else {
+        return
+      }
+      found.append(url)
+    }
+
+    XCTAssertEqual(found.count, 7)
   }
 
   // Countering my subsiding motivation to proceed, I compared performance:

@@ -253,7 +253,7 @@ private extension CharacterSet {
     .union(.whitespacesAndNewlines)
 
   static let noSpacesBefore = CharacterSet.punctuationCharacters
-    .subtracting(CharacterSet(charactersIn: "-–"))
+    .subtracting(CharacterSet(charactersIn: "-–&"))
 
   static let ignored = CharacterSet.whitespacesAndNewlines
     .union(.controlCharacters)
@@ -473,16 +473,20 @@ extension HTMLAttributor: NodeTreeTransforming {
     
     for tr in trs {
       let tag = tr.tag
+      
       guard var attrs = styles[tag] else {
         continue
       }
+
       if tag == "a" {
-        if let href = tr.attributes?["href"] {
-          if let url = URL(string: href) {
-            attrs[NSAttributedString.Key.link] = url as AnyObject?
-          }
+        guard let href = tr.attributes?["href"],
+          let url = URL(string: href) else {
+          continue
         }
+
+        attrs[NSAttributedString.Key.link] = url as AnyObject?
       }
+
       let r = tr.range
       let l = r.location + r.length
       assert(l <= astr.length, "out of range: \(l) > \(astr.length)")
