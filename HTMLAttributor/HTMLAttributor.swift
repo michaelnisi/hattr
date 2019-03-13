@@ -53,8 +53,10 @@ extension Node: CustomStringConvertible {
   }
 }
 
-public func ==(lhs: Node, rhs: Node) -> Bool {
-  return lhs.uid == rhs.uid
+extension Node: Equatable {
+  public static func ==(lhs: Node, rhs: Node) -> Bool {
+    return lhs.uid == rhs.uid
+  }
 }
 
 extension Node: Hashable {
