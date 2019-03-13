@@ -9,53 +9,6 @@
 import Foundation
 import UIKit
 
-func allNodes(_ root: Node) -> [Node] {
-  return root.children.reduce([root]) { acc, node in
-    acc + allNodes(node)
-  }
-}
-
-func candidate(_ root: Node, node: Node) -> Node {
-  func fallback() -> Node {
-    let nodes = allNodes(root)
-    let p = parent(node, nodes: nodes)
-
-    return candidate(root, node: p)
-  }
-
-  switch node.type {
-  case .element(let data):
-    if data.tagName == "br" {
-      return fallback()
-    }
-  case .text:
-    return fallback()
-  }
-  return node
-}
-
-func parent(_ node: Node, nodes: [Node]) -> Node {
-  assert(!nodes.isEmpty, "no candidates")
-
-  let parents = nodes.filter {
-    $0.children.contains { $0 == node }
-  }
-
-  assert(!parents.isEmpty, "\(node.uid) is an orphan")
-  assert(parents.count == 1, "multiple parents")
-  
-  let p = parents.first!
-  
-  switch p.type {
-  case.element(let data):
-    assert(data.tagName != "br", "invalid parent: br")
-  case .text:
-    fatalError("invalid parent: text node")
-  }
-  
-  return p
-}
-
 private func NSRange(from range: Range<String.Index>, within string: String)
   -> NSRange {
     let utf16view = string.utf16
