@@ -9,100 +9,6 @@
 import Foundation
 import UIKit
 
-public struct ElementData {
-  let tagName: String
-  let attributes: [String : String]
-}
-
-public enum NodeType {
-  case text(String)
-  case element(ElementData)
-}
-
-public final class Node {
-  var children: [Node]
-  let type: NodeType
-  let uid: Int
-  
-  init(uid: Int, type: NodeType, children: [Node] = [Node]()) {
-    self.uid = uid
-    self.type = type
-    self.children = children
-  }
-  
-  func append(_ node: Node) {
-    children.append(node)
-  }
-}
-
-extension Node: CustomStringConvertible {
-  public var description: String {
-    get {
-      func desc() -> String {
-        switch type {
-        case .element(let data):
-          return "\(uid): \(data.tagName)"
-        case .text(let text):
-          return "\(uid): \(text)"
-        }
-      }
-      return children.reduce(desc()) { acc, child in
-        "\(acc) \(child.description)"
-      }
-    }
-  }
-}
-
-extension Node: Equatable {
-  public static func ==(lhs: Node, rhs: Node) -> Bool {
-    return lhs.uid == rhs.uid
-  }
-}
-
-extension Node: Hashable {
-  public var hashValue: Int {
-    return uid
-  }
-}
-
-public protocol HTMLParsing {
-  func parse(_ html: String) throws -> Node
-}
-
-public protocol NodeTreeTransforming {
-  
-  /// An, admittedly rather limited, string representation of the tree—good
-  /// enough for developing and debugging.
-  ///
-  /// - Parameter tree: A tree of DOM nodes.
-  /// - Throws: May throw `NSXMLParser` errors.
-  ///
-  /// - Returns: A simplified string representation of the tree.
-  func string(_ tree: Node) throws -> String
-  
-  /// Creates and returns an attributed string from the provided tree.
-  ///
-  /// It should be obvious, but please note: **this can never be a proper HTML
-  /// interpreter**, the attributes are set redundantly by tag name, without
-  /// any optimizations—*the last one wins*.
-  ///
-  /// - Parameters:
-  ///   - tree: The tree to use as a source for the attributed string.
-  ///   - styles: A dictionary of styles, dictionaries of attributes
-  /// identified by tag names, to be set on the resulting attributed string.
-  /// Without styles `HTMLAttributor.defaultStyles` are used.
-  ///
-  /// - Throws: May throws `NSXMLParser` errors.
-  ///
-  /// - Returns: An attributed Cocoa string.
-  func attributedString(
-    _ tree: Node,
-    styles: [String : [NSAttributedString.Key : Any]]
-  ) throws -> NSAttributedString
-}
-
-// MARK: - Internals
-
 func allNodes(_ root: Node) -> [Node] {
   return root.children.reduce([root]) { acc, node in
     acc + allNodes(node)
@@ -113,8 +19,10 @@ func candidate(_ root: Node, node: Node) -> Node {
   func fallback() -> Node {
     let nodes = allNodes(root)
     let p = parent(node, nodes: nodes)
+
     return candidate(root, node: p)
   }
+
   switch node.type {
   case .element(let data):
     if data.tagName == "br" {
@@ -128,9 +36,11 @@ func candidate(_ root: Node, node: Node) -> Node {
 
 func parent(_ node: Node, nodes: [Node]) -> Node {
   assert(!nodes.isEmpty, "no candidates")
+
   let parents = nodes.filter {
     $0.children.contains { $0 == node }
   }
+
   assert(!parents.isEmpty, "\(node.uid) is an orphan")
   assert(parents.count == 1, "multiple parents")
   
@@ -146,107 +56,16 @@ func parent(_ node: Node, nodes: [Node]) -> Node {
   return p
 }
 
-private final class ParserDelegate: NSObject, XMLParserDelegate {
-  
-  // MARK: State
-  
-  // The root node of our document.
-  var root: Node!
-  
-  // The current node in the tree while parsing.
-  private var current: Node!
-  
-  // A count of the encountered nodes.
-  private var count: Int = 0
-  
-  func uid() -> Int {
-    count += 1
-    return count
-  }
-  
-  // MARK: API
-  
-  // Container to accumulate strings for text nodes. Should be set to `nil`
-  // after all its content has been consumed.
-  var text: String?
-  
-  @discardableResult private func consumeText() -> Bool {
-    guard let t = text else {
-      return false
-    }
-    let textNode = Node(uid: uid(), type: .text(t))
-    let p = candidate(root, node: current)
-    p.append(textNode)
-    text = nil
-    return true
-  }
-  
-  // MARK: NSXMLParserDelegate
-  
-  @objc fileprivate func parser(
-    _ parser: XMLParser,
-    didStartElement elementName: String,
-    namespaceURI: String?,
-    qualifiedName qName: String?,
-    attributes attributeDict: [String : String]) {
-    let data = ElementData(tagName: elementName, attributes: attributeDict)
-    let node = Node(uid: uid(), type: .element(data))
-    
-    if elementName == "root" {
-      root = node
-    } else {
-      assert(root != nil, "root cannot be nil")
-      
-      // When a new element starts, we have to make sure we have consumed all
-      // previously accumulated text and begin a new string.
-      consumeText()
-      
-      let p = candidate(root, node: current)
-      p.append(node)
-    }
-    
-    current = node
-  }
-  
-  @objc fileprivate func parser(
-    _ parser: XMLParser,
-    foundCharacters string: String) {
-    text = (text ?? "") + string
-  }
-  
-  @objc fileprivate func parser(
-    _ parser: XMLParser,
-    didEndElement elementName: String,
-    namespaceURI: String?,
-    qualifiedName qName: String?) {
-    assert(root != nil, "root cannot be nil")
-    
-    consumeText()
-    
-    guard elementName != "root" else {
-      return
-    }
-    
-    let nodes = allNodes(root)
-    let p = parent(current, nodes: nodes)
-    current = p
-  }
-  
-  @objc fileprivate func parserDidEndDocument(_ parser: XMLParser) {
-    current = nil
-    text = nil
-  }
-}
-
-func NSRange(from range: Range<String.Index>, within string: String)
+private func NSRange(from range: Range<String.Index>, within string: String)
   -> NSRange {
-  let utf16view = string.utf16
-  let from = range.lowerBound.samePosition(in: utf16view)!
-  let to = range.upperBound.samePosition(in: utf16view)!
-  
-  let loc = utf16view.distance(from: utf16view.startIndex, to: from)
-  let len = utf16view.distance(from: from, to: to)
-  return NSMakeRange(loc, len)
+    let utf16view = string.utf16
+    let from = range.lowerBound.samePosition(in: utf16view)!
+    let to = range.upperBound.samePosition(in: utf16view)!
+
+    let loc = utf16view.distance(from: utf16view.startIndex, to: from)
+    let len = utf16view.distance(from: from, to: to)
+    
+    return NSMakeRange(loc, len)
 }
 
 private extension CharacterSet {
@@ -381,13 +200,16 @@ public final class HTMLAttributor {
                 }
               }
               return ""
+
             case "p", "ul", "ol", "h1", "h2", "h3", "h4", "h5", "h6":
               guard node == p.children.last, !trimmed.isEmpty else {
                 return ""
               }
               return "\n\n"
+
             case "li":
               return "\n"
+
             default: return ""
             }
           default:
@@ -401,6 +223,7 @@ public final class HTMLAttributor {
           let r = acc.endIndex ..< str.endIndex
           let nsr = NSRange(from: r, within: str)
           let tr = TaggedRange(tag: t, attributes: attributes, range: nsr)
+
           ranges.append(tr)
         }
         
@@ -491,6 +314,7 @@ extension HTMLAttributor: NodeTreeTransforming {
 
       let r = tr.range
       let l = r.location + r.length
+      
       assert(l <= astr.length, "out of range: \(l) > \(astr.length)")
       astr.setAttributes(attrs, range: r)
     }
@@ -500,6 +324,7 @@ extension HTMLAttributor: NodeTreeTransforming {
   
   public func string(_ tree: Node) throws -> String {
     let (str, _) = try taggedString(tree, opts: .bracketLinks)
+
     return str
   }
 

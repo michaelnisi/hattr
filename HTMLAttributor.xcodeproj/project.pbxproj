@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C2EDA412238D0B300528E99 /* ParserDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C2EDA402238D0B300528E99 /* ParserDelegate.swift */; };
+		4C2EDA432238D2D200528E99 /* NodeTreeTransforming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C2EDA422238D2D200528E99 /* NodeTreeTransforming.swift */; };
 		4CA4E7D6219948E30013E89E /* missingLink.html in Resources */ = {isa = PBXBuildFile; fileRef = 4CA4E7D5219948E30013E89E /* missingLink.html */; };
 		4EEB54901F73760900D685EE /* HTMLAttributor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EEB54861F73760900D685EE /* HTMLAttributor.framework */; };
 		4EEB54951F73760900D685EE /* HTMLAttributorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EEB54941F73760900D685EE /* HTMLAttributorTests.swift */; };
@@ -25,6 +27,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4C2EDA402238D0B300528E99 /* ParserDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParserDelegate.swift; sourceTree = "<group>"; };
+		4C2EDA422238D2D200528E99 /* NodeTreeTransforming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeTreeTransforming.swift; sourceTree = "<group>"; };
 		4CA4E7D5219948E30013E89E /* missingLink.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = missingLink.html; sourceTree = "<group>"; };
 		4EEB54861F73760900D685EE /* HTMLAttributor.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HTMLAttributor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4EEB54891F73760900D685EE /* HTMLAttributor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HTMLAttributor.h; sourceTree = "<group>"; };
@@ -76,6 +80,8 @@
 			isa = PBXGroup;
 			children = (
 				4EEB54891F73760900D685EE /* HTMLAttributor.h */,
+				4C2EDA422238D2D200528E99 /* NodeTreeTransforming.swift */,
+				4C2EDA402238D0B300528E99 /* ParserDelegate.swift */,
 				4EEB54A01F73762700D685EE /* HTMLAttributor.swift */,
 				4EEB548A1F73760900D685EE /* Info.plist */,
 			);
@@ -206,6 +212,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				4EEB54A11F73762700D685EE /* HTMLAttributor.swift in Sources */,
+				4C2EDA412238D0B300528E99 /* ParserDelegate.swift in Sources */,
+				4C2EDA432238D2D200528E99 /* NodeTreeTransforming.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
