@@ -467,8 +467,8 @@ extension HTMLAttributor: NodeTreeTransforming {
     let astr = NSMutableAttributedString(string: str)
     
     // Global attributes must be set first.
-    
-    let attrs = HTMLAttributor.defaultStyles["root"]!
+    let attrs = styles["root"]!
+
     astr.setAttributes(attrs, range: NSMakeRange(0, astr.length))
     
     for tr in trs {
