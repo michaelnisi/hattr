@@ -113,7 +113,8 @@ class HTMLAttributorTests: XCTestCase {
       "Ein – link – für dich",
       "Aktuell zu den Midterms ;)\nUS-Midterm",
       "(link & link)",
-      "the \"irony\""
+      "the \"irony\"",
+      "the 'irony'"
     ]
 
     let html = [
@@ -126,7 +127,8 @@ class HTMLAttributorTests: XCTestCase {
       "Ein – <a>link</a> – für dich",
       "Aktuell zu den Midterms ;)<br />US-Midterm \r\n\r\n \t",
       "(<a>link</a> &amp; <a>link</a> )",
-      "the \"<a>irony</a>\""
+      "the \"<a>irony</a>\"",
+      "the '<a>irony</a>'"
     ]
 
     assert(wanted.count == html.count)

@@ -23,7 +23,7 @@ private func NSRange(
 
 private extension CharacterSet {
 
-  static let noSpacesAfter = CharacterSet(charactersIn: "“(\"")
+  static let noSpacesAfter = CharacterSet(charactersIn: "“(\"'")
     .union(.whitespacesAndNewlines)
 
   static let noSpacesBefore = CharacterSet.punctuationCharacters
