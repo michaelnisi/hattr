@@ -9,21 +9,21 @@
 import Foundation
 import UIKit
 
-private func NSRange(from range: Range<String.Index>, within string: String)
-  -> NSRange {
-    let utf16view = string.utf16
-    let from = range.lowerBound.samePosition(in: utf16view)!
-    let to = range.upperBound.samePosition(in: utf16view)!
+private func NSRange(
+  from range: Range<String.Index>, within string: String) -> NSRange {
+  let utf16view = string.utf16
+  let from = range.lowerBound.samePosition(in: utf16view)!
+  let to = range.upperBound.samePosition(in: utf16view)!
 
-    let loc = utf16view.distance(from: utf16view.startIndex, to: from)
-    let len = utf16view.distance(from: from, to: to)
-    
-    return NSMakeRange(loc, len)
+  let loc = utf16view.distance(from: utf16view.startIndex, to: from)
+  let len = utf16view.distance(from: from, to: to)
+
+  return NSMakeRange(loc, len)
 }
 
 private extension CharacterSet {
 
-  static let noSpacesAfter = CharacterSet(charactersIn: "“(")
+  static let noSpacesAfter = CharacterSet(charactersIn: "“(\"")
     .union(.whitespacesAndNewlines)
 
   static let noSpacesBefore = CharacterSet.punctuationCharacters
@@ -32,6 +32,7 @@ private extension CharacterSet {
   static let ignored = CharacterSet.whitespacesAndNewlines
     .union(.controlCharacters)
     .union(.illegalCharacters)
+
 }
 
 private extension String {
@@ -66,7 +67,10 @@ public final class HTMLAttributor {
   
   private struct StringOptions: OptionSet {
     let rawValue: Int
-    init(rawValue: Int) { self.rawValue = rawValue }
+
+    init(rawValue: Int) {
+      self.rawValue = rawValue
+    }
     
     static let bracketLinks = StringOptions(rawValue: 1)
   }
@@ -76,7 +80,6 @@ public final class HTMLAttributor {
     opts: StringOptions = StringOptions()
   ) throws -> (String, [TaggedRange]) {
     let nodes = allNodes(tree)
-    
     var ranges = [TaggedRange]()
     
     let result = nodes.reduce("") { acc, node in

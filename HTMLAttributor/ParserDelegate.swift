@@ -14,7 +14,7 @@ func allNodes(_ root: Node) -> [Node] {
   }
 }
 
-func candidate(_ root: Node, node: Node) -> Node {
+private func candidate(_ root: Node, node: Node) -> Node {
   func fallback() -> Node {
     let nodes = allNodes(root)
     let p = parent(node, nodes: nodes)

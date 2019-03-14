@@ -1,21 +1,23 @@
-[![Build Status](https://secure.travis-ci.org/michaelnisi/hattr.svg)](http://travis-ci.org/michaelnisi/hattr)
-
 # hattr - parse HTML
 
-The **hattr** package provides a simple HTML parser to efficiently transform HTML into attributed strings for iOS.
+[![Build Status](https://secure.travis-ci.org/michaelnisi/hattr.svg)](http://travis-ci.org/michaelnisi/hattr)
+
+The **hattr** iOS package provides a naïve HTML parser to efficiently transform HTML into attributed strings.
 
 ## Goals
 
-- No dependencies, except for UIKit
+- No dependencies except UIKit
 - Offloadable from main thread
-- 😘
+- Simple and fast
+
+> 50X faster than `NSAttributedString.init(data:options:documentAttributes:)`
+
+At least 50X less correct.
 
 ## Example
 
 ```swift
 import HTMLAttributor
-
-// html is a HTML String
 
 let hattr = HTMLAttributor()
 let tree = try! hattr.parse(html)

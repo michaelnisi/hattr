@@ -15,16 +15,19 @@ class HTMLAttributorTests: XCTestCase {
 
   override func setUp() {
     super.setUp()
+
     html = HTMLAttributor()
   }
 
   override func tearDown() {
     html = nil
+
     super.tearDown()
   }
 
   func string(_ str: String) -> String {
     let tree = try! self.html.parse(str)
+
     return try! self.html.string(tree)
   }
 
@@ -49,10 +52,11 @@ class HTMLAttributorTests: XCTestCase {
       """
     ]
 
-    XCTAssertEqual(wanted.count, html.count)
+    assert(wanted.count == html.count)
 
     for (i, b) in wanted.enumerated() {
       let a = string(html[i])
+
       XCTAssertEqual(a, b)
     }
   }
@@ -66,10 +70,11 @@ class HTMLAttributorTests: XCTestCase {
       "<p>abc</p>"
     ]
 
-    XCTAssertEqual(wanted.count, html.count)
+    assert(wanted.count == html.count)
 
     for (i, b) in wanted.enumerated() {
       let a = string(html[i])
+
       XCTAssertEqual(a, b)
     }
   }
@@ -88,43 +93,47 @@ class HTMLAttributorTests: XCTestCase {
       """
     ]
 
-    XCTAssertEqual(wanted.count, html.count)
+    assert(wanted.count == html.count)
 
     for (i, b) in wanted.enumerated() {
       let a = string(html[i])
+
       XCTAssertEqual(a, b)
     }
   }
 
   func testSpaces() {
     let wanted = [
-//      "Twitter: @SlateRepresent",
-//      "Ending a sentence with a link.",
-//      "And “link”",
-//      "link (after)",
-//      "(link)",
-//      "A - link - for you",
-//      "Ein – link – für dich",
-//      "Aktuell zu den Midterms ;)\nUS-Midterm",
-      "(link & link)"
+      "Twitter: @SlateRepresent",
+      "Ending a sentence with a link.",
+      "And “link”",
+      "link (after)",
+      "(link)",
+      "A - link - for you",
+      "Ein – link – für dich",
+      "Aktuell zu den Midterms ;)\nUS-Midterm",
+      "(link & link)",
+      "the \"irony\""
     ]
 
     let html = [
-//      "Twitter:<a> @SlateRepresent</a>",
-//      "Ending a sentence with a <a>link</a>.",
-//      "And “<a>link</a>”",
-//      "<a>link</a> (after)",
-//      "(<a>link</a>)",
-//      "A - <a>link</a> - for you",
-//      "Ein – <a>link</a> – für dich",
-//      "Aktuell zu den Midterms ;)<br />US-Midterm \r\n\r\n \t",
-      "(<a>link</a> &amp; <a>link</a> )"
+      "Twitter:<a> @SlateRepresent</a>",
+      "Ending a sentence with a <a>link</a>.",
+      "And “<a>link</a>”",
+      "<a>link</a> (after)",
+      "(<a>link</a>)",
+      "A - <a>link</a> - for you",
+      "Ein – <a>link</a> – für dich",
+      "Aktuell zu den Midterms ;)<br />US-Midterm \r\n\r\n \t",
+      "(<a>link</a> &amp; <a>link</a> )",
+      "the \"<a>irony</a>\""
     ]
 
-    XCTAssertEqual(html.count, wanted.count)
+    assert(wanted.count == html.count)
 
     for (i, b) in wanted.enumerated() {
       let a = string(html[i])
+
       XCTAssertEqual(a, b)
     }
   }
@@ -158,10 +167,11 @@ class HTMLAttributorTests: XCTestCase {
       "<p> </p>\n<p>Ripley</p>"
     ]
 
-    XCTAssertEqual(wanted.count, html.count)
+    assert(wanted.count == html.count)
 
     for (i, b) in wanted.enumerated() {
       let a = string(html[i])
+
       XCTAssertEqual(a, b)
     }
   }
@@ -169,6 +179,7 @@ class HTMLAttributorTests: XCTestCase {
   func testAttributedString() {
     func f(_ str: String) -> NSAttributedString {
       let tree = try! self.html.parse(str)
+
       return try! self.html.attributedString(tree)
     }
 
@@ -198,10 +209,11 @@ class HTMLAttributorTests: XCTestCase {
       f("<h1>  Whitespace?</h1>")
     ]
 
-    XCTAssertEqual(wanted.count, found.count)
+    assert(wanted.count == found.count)
 
     for (i, b) in wanted.enumerated() {
       let a = found[i].string
+
       XCTAssertEqual(a, b)
     }
   }
@@ -211,6 +223,7 @@ class HTMLAttributorTests: XCTestCase {
       let tree = try! self.html.parse(str)
       return allNodes(tree).count
     }
+
     let tests = [
       (f(""), 1),
       (f("Aliens?"), 2),
@@ -219,6 +232,7 @@ class HTMLAttributorTests: XCTestCase {
       (f("<h1>Aliens?</h1>Why yes.<br/>Oh noes …"), 6),
       (f("<ul><li>a</li><li>b</li><li>c</li></ul>"), 8)
     ]
+
     for t in tests {
       XCTAssertEqual(t.0, t.1)
     }
@@ -233,21 +247,21 @@ class HTMLAttributorTests: XCTestCase {
     let tree = try! self.html.parse(str)
     let attrStr = try! self.html.attributedString(tree)
     let all =  NSMakeRange(0, attrStr.length)
-
     var found = [URL]()
 
     attrStr.enumerateAttribute(.link, in: all) { attr, range, ref in
       guard let url = attr as? URL else {
         return
       }
+
       found.append(url)
     }
 
     XCTAssertEqual(found.count, 7)
   }
 
-  // Countering my subsiding motivation to proceed, I compared performance:
-  // NSAttributedString.DocumentType.html is 50X slower.
+  // HTMLAttributor is 50X faster than
+  // NSAttributedString.init(data:options:documentAttributes:)
 
 //  func testAttributedStringPerformance() {
 //    self.measure {
@@ -258,11 +272,7 @@ class HTMLAttributorTests: XCTestCase {
 //      }
 //    }
 //  }
-
-  // Measuring Apple's full blown HTML parser for comparison, which takes ages
-  // to start its initial run because it has to load a plethora of dependencies
-  // first.
-
+//
 //  func testDataUsingEncodingPerformance() {
 //    self.measure {
 //      for _ in 0..<10 {
