@@ -60,9 +60,11 @@ extension Node: Equatable {
 }
 
 extension Node: Hashable {
-  public var hashValue: Int {
-    return uid
+  
+  public func hash(into hasher: inout Hasher) {
+    hasher.combine(uid)
   }
+  
 }
 
 public protocol HTMLParsing {
