@@ -2,7 +2,7 @@ P=HTMLAttributor.xcodeproj
 
 XCODEBUILD=xcodebuild
 
-IOS_DEST=-destination 'platform=iOS Simulator,name=iPhone SE'
+IOS_DEST=-destination 'platform=iOS Simulator,name=iPhone 11'
 
 all: iOS
 
