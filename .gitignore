@@ -13,6 +13,8 @@
 *.xccheckout
 *.xcuserstate
 *.xcworkspace
+.build
+.swiftpm
 DerivedData
 build/
 xcuserdata

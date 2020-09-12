@@ -241,8 +241,7 @@ class HTMLAttributorTests: XCTestCase {
   }
 
   func testInvalidURL() {
-    let bundle = Bundle.init(for: classForCoder)
-    let url = bundle.url(forResource: "missingLink", withExtension: "html")!
+    let url = Bundle.module.url(forResource: "missingLink", withExtension: "html")!
     let data = try! Data(contentsOf: url)
     let str = String(data: data, encoding: .utf8)!
 
