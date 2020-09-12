@@ -1,7 +1,5 @@
 # hattr - parse HTML
 
-[![Build Status](https://secure.travis-ci.org/michaelnisi/hattr.svg)](http://travis-ci.org/michaelnisi/hattr)
-
 The **hattr** iOS package provides a naïve HTML parser to efficiently transform HTML into attributed strings.
 
 ## Goals
