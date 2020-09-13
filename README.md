@@ -24,6 +24,10 @@ let attributedText = try! hattr.attributedString(tree)
 
 Find a runnable example in `HTMLPlayground.playground`.
 
+## Install
+
+📦 Add `https://github.com/michaelnisi/hattr` to your package dependencies.
+
 ## License
 
 [MIT License](https://raw.github.com/michaelnisi/hattr/master/LICENSE)
